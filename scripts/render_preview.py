@@ -141,7 +141,7 @@ class SoftwareRenderer:
         view = self.view_matrix(eye, target, up)
         verts = triangles.reshape(-1, 3)
         homo = np.concatenate([verts, np.ones((verts.shape[0], 1))], axis=1)
-        camera_space = (homo @ view.T).reshape(-1, 3, 3)
+        camera_space = (homo @ view.T)[:, :3].reshape(-1, 3, 3)
 
         tri_normals_world = normals
         rot = view[:3, :3]
@@ -211,7 +211,7 @@ class SoftwareRenderer:
             gx = np.arange(xa, xb) + 0.5
             gy = np.arange(ya, yb) + 0.5
             px, py = np.meshgrid(gx, gy)
-            a, b, c = sx_k[i], sy_k[i]
+            a, b = sx_k[i], sy_k[i]
             # Barycentric inside test.
             denom = ((b[1] - b[2]) * (a[0] - a[2]) + (a[2] - a[1]) * (b[0] - b[2]))
             if abs(denom) < 1e-9:
@@ -346,7 +346,7 @@ def load_glb_for_render(path: str) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
                     world_n = np.zeros_like(world)
                 indices = _accessor_array(gltf, bin_chunk, primitive["indices"]).astype(np.int64)
                 tris = world[indices].reshape(-1, 3, 3)
-                tri_n = world_n[indices].mean(axis=1)
+                tri_n = world_n[indices].reshape(-1, 3, 3).mean(axis=1)
                 material = materials[primitive.get("material", 0)] if materials else {}
                 color = _material_rgb(material)
                 triangles.append(tris)

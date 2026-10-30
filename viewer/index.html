@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DSX-01 Kairos Horizon — 3D Workbench</title>
+<link rel="stylesheet" href="./src/styles.css" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three.module.js",
+    "three/addons/": "./vendor/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <header class="brand">
+      <h1>DSX-01 <span>Kairos Horizon</span></h1>
+      <p class="tagline">Deep Space Exploration Vessel — interactive 3D workbench</p>
+    </header>
+
+    <section class="panel">
+      <h2>Assets</h2>
+      <div id="asset-list" class="asset-list"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Systems</h2>
+      <div id="system-list" class="system-list"></div>
+    </section>
+
+    <section class="panel">
+      <h2>View</h2>
+      <div class="row">
+        <label for="explode">Explode</label>
+        <input id="explode" type="range" min="0" max="100" value="0" />
+      </div>
+      <div class="btn-row" id="camera-presets"></div>
+      <div class="toggle-grid">
+        <label><input type="checkbox" id="t-wire" /> Wireframe</label>
+        <label><input type="checkbox" id="t-grid" checked /> Grid</label>
+        <label><input type="checkbox" id="t-rotate" /> Auto-rotate</label>
+        <label><input type="checkbox" id="t-spin" checked /> Spin ring</label>
+        <label><input type="checkbox" id="t-stars" checked /> Starfield</label>
+      </div>
+    </section>
+  </aside>
+
+  <main id="stage">
+    <canvas id="view"></canvas>
+    <div id="hud">
+      <div id="hud-stats" class="hud-stats"></div>
+      <div id="hud-hint" class="hud-hint">drag to orbit · scroll to zoom · click a part for details</div>
+    </div>
+    <aside id="info" class="hidden">
+      <button id="info-close" title="close">×</button>
+      <h3 id="info-label"></h3>
+      <div id="info-body"></div>
+    </aside>
+    <div id="loading" class="loading hidden"><span>loading model…</span></div>
+  </main>
+</div>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
