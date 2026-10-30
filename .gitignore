@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Blender
+*.blend1
+*.blend2
+models/blend/*.blend[0-9]
+
+# Node / viewer tooling
+node_modules/
+viewer/vendor/.download-cache/
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Build scratch (keep generated deliverables, ignore transient caches)
+*.tmp
+*.bak
+tmp/

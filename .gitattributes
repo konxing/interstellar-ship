@@ -1,0 +1,23 @@
+# Normalise line endings for text sources.
+* text=auto eol=lf
+
+# Source and docs
+*.py text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Binary assets - never diff or normalise
+*.glb binary
+*.gltf -diff
+*.blend binary
+*.png binary
+*.jpg binary
+*.zip binary
+*.bundle binary
