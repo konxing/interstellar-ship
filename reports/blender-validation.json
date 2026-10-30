@@ -1,0 +1,134 @@
+{
+  "purpose": "Cross-validate Python glTF exporter vs Blender glTF exporter",
+  "blenderDir": "/tmp/dsx_blender_glbs",
+  "assets": [
+    {
+      "assetId": "dsx-01_full_ship",
+      "status": "pass",
+      "python": {
+        "triangles": 67720,
+        "vertices": 64217,
+        "meshes": 29,
+        "materials": 35
+      },
+      "blender": {
+        "triangles": 67720,
+        "vertices": 178362,
+        "meshes": 29,
+        "materials": 23
+      },
+      "trianglesMatch": true,
+      "meshesMatch": true
+    },
+    {
+      "assetId": "dsx-02_deck_01_command",
+      "status": "pass",
+      "python": {
+        "triangles": 16984,
+        "vertices": 23009,
+        "meshes": 7,
+        "materials": 35
+      },
+      "blender": {
+        "triangles": 16984,
+        "vertices": 36373,
+        "meshes": 7,
+        "materials": 18
+      },
+      "trianglesMatch": true,
+      "meshesMatch": true
+    },
+    {
+      "assetId": "dsx-02_deck_02_operations",
+      "status": "pass",
+      "python": {
+        "triangles": 14508,
+        "vertices": 20236,
+        "meshes": 6,
+        "materials": 35
+      },
+      "blender": {
+        "triangles": 14508,
+        "vertices": 30173,
+        "meshes": 6,
+        "materials": 23
+      },
+      "trianglesMatch": true,
+      "meshesMatch": true
+    },
+    {
+      "assetId": "dsx-02_deck_03_habitat",
+      "status": "pass",
+      "python": {
+        "triangles": 39232,
+        "vertices": 40473,
+        "meshes": 7,
+        "materials": 35
+      },
+      "blender": {
+        "triangles": 39232,
+        "vertices": 103312,
+        "meshes": 7,
+        "materials": 21
+      },
+      "trianglesMatch": true,
+      "meshesMatch": true
+    },
+    {
+      "assetId": "dsx-02_deck_04_engineering",
+      "status": "pass",
+      "python": {
+        "triangles": 21144,
+        "vertices": 26391,
+        "meshes": 7,
+        "materials": 35
+      },
+      "blender": {
+        "triangles": 21144,
+        "vertices": 47250,
+        "meshes": 7,
+        "materials": 20
+      },
+      "trianglesMatch": true,
+      "meshesMatch": true
+    },
+    {
+      "assetId": "dsx-03_interior_compartments",
+      "status": "pass",
+      "python": {
+        "triangles": 70252,
+        "vertices": 79123,
+        "meshes": 14,
+        "materials": 35
+      },
+      "blender": {
+        "triangles": 70252,
+        "vertices": 169822,
+        "meshes": 14,
+        "materials": 30
+      },
+      "trianglesMatch": true,
+      "meshesMatch": true
+    },
+    {
+      "assetId": "dsx-04_propulsion_system",
+      "status": "pass",
+      "python": {
+        "triangles": 32216,
+        "vertices": 25283,
+        "meshes": 9,
+        "materials": 35
+      },
+      "blender": {
+        "triangles": 32216,
+        "vertices": 82110,
+        "meshes": 9,
+        "materials": 20
+      },
+      "trianglesMatch": true,
+      "meshesMatch": true
+    }
+  ],
+  "allMatch": true,
+  "failures": []
+}
