@@ -37,8 +37,8 @@ SPINE_X_AFT = -150.0
 ENGINE_BLOCK_X_AFT = -206.0
 NOZZLE_EXIT_X = -246.0
 
-MAX_BEAM = 104.0        # across the radiator wings / centrifuge ring
-MAX_HEIGHT = 98.0       # across the sensor mast and radiator wings
+MAX_BEAM = 104.0        # across the centrifuge ring / radiator wings
+MAX_HEIGHT = 105.0      # across the centrifuge ring and dorsal sensor mast
 
 # --------------------------------------------------------------------------- #
 # Deck stack. Four pressure decks, 7 m each, keel of the habitable block at -14 m.
