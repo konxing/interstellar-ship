@@ -102,18 +102,18 @@ them as `pbrMetallicRoughness` + `emissiveFactor` + `alphaMode`.
 
 ## 9. Asset inventory
 
-Seven glTF-binary assets (262 056 triangles, ~8.3 MB total) plus the Blender
+Seven glTF-binary assets (353 864 triangles, ~11.5 MB total) plus the Blender
 master original:
 
 | Asset | Triangles | Content |
 |---|---|---|
-| dsx-01_full_ship | 67 720 | complete exterior, all 11 systems |
+| dsx-01_full_ship | 133 444 | complete exterior, all 11 systems |
 | dsx-02_deck_01_command | 16 984 | deck 1 cutaway + fitted rooms |
 | dsx-02_deck_02_operations | 14 508 | deck 2 cutaway + fitted rooms |
 | dsx-02_deck_03_habitat | 39 232 | deck 3 cutaway + fitted rooms |
 | dsx-02_deck_04_engineering | 21 144 | deck 4 cutaway + fitted rooms |
 | dsx-03_interior_compartments | 70 252 | 12 compartments + service corridor + EVA airlock |
-| dsx-04_propulsion_system | 32 216 | fusion torch drive study + RCS pod |
+| dsx-04_propulsion_system | 58 300 | fusion torch drive study + RCS pod |
 
 See `docs/asset-contract.md` for the node/metadata contract and
 `reports/model-validation.json` for measured bounds and counts.

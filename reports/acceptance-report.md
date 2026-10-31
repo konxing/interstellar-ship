@@ -10,10 +10,11 @@ Generated on the `feat/spaceship-3d-workbench` branch.
 | Branch | `feat/spaceship-3d-workbench` (main carries only the skeleton commit) |
 | Feature commits | 4 staged milestone commits on top of the skeleton |
 | Tracked files | 61 across assets/, blender/, geometry/, models/, reports/, scripts/, shipspec/, tests/, viewer/ |
-| GLB assets | 7 (262 056 triangles, 8.3 MB) |
+| GLB assets | 7 (353 864 triangles, 11.5 MB) |
 | Blender original | `models/blend/dsx-01_full_ship.blend` (6.5 MB, 29 objects) |
 | Preview stills | 14 PNGs in `assets/preview/` |
-| Automated tests | 33 passed, 0 failed (`scripts/run_tests.py`) |
+| Automated tests | 43 passed, 0 failed (`scripts/run_tests.py`) |
+| Viewer tests | 22 passed, 0 failed (`node --test "viewer/tests/*.test.mjs"`) |
 | Blender↔Python cross-validation | all 7 assets match on triangle & mesh counts |
 | Viewer smoke test | headless Chromium logs `DSX_VIEWER_READY` and builds the full UI/metadata |
 
@@ -28,13 +29,13 @@ Generated on the `feat/spaceship-3d-workbench` branch.
 
 | Asset | Triangles | Vertices | Meshes | Materials | Bounds (m, export frame) |
 |---|---|---|---|---|---|
-| dsx-01_full_ship | 67 720 | 64 217 | 29 | 35 | 492.0 × 104.3 × 102.8 |
-| dsx-02_deck_01_command | 16 984 | 23 009 | 7 | 35 | 140 × 8 × 64 |
-| dsx-02_deck_02_operations | 14 508 | 20 236 | 6 | 35 | 140 × 9 × 64 |
-| dsx-02_deck_03_habitat | 39 232 | 40 473 | 7 | 35 | 140 × 9 × 67 |
-| dsx-02_deck_04_engineering | 21 144 | 26 391 | 7 | 35 | 140 × 8 × 64 |
-| dsx-03_interior_compartments | 70 252 | 79 123 | 14 | 35 | 382 × 14 × 44 |
-| dsx-04_propulsion_system | 32 216 | 25 283 | 9 | 35 | 50 × 27 × 28 |
+| dsx-01_full_ship | 133 444 | 153 646 | 32 | 35 | 492.4 × 105.3 × 104.8 |
+| dsx-02_deck_01_command | 16 984 | 23 009 | 7 | 35 | 140 × 8.5 × 64 |
+| dsx-02_deck_02_operations | 14 508 | 20 236 | 6 | 35 | 140 × 9.3 × 64 |
+| dsx-02_deck_03_habitat | 39 232 | 40 473 | 7 | 35 | 140 × 8.9 × 66.8 |
+| dsx-02_deck_04_engineering | 21 144 | 26 391 | 7 | 35 | 140 × 8.5 × 64 |
+| dsx-03_interior_compartments | 70 252 | 79 123 | 14 | 35 | 382.1 × 14.1 × 43.8 |
+| dsx-04_propulsion_system | 58 300 | 50 983 | 9 | 35 | 60.7 × 28.2 × 29.1 |
 
 - B5 PASS: every GLB round-trips through `geometry.glb.read_glb`; counts in the
   file equal the manifest (`roundTrip.matchesBuild = true` for all).
@@ -62,7 +63,9 @@ Generated on the `feat/spaceship-3d-workbench` branch.
 
 - D1 PASS: `docs/design-specification.md`, `docs/modeling-guide.md`,
   `docs/asset-contract.md`, `docs/viewer-user-guide.md`, `docs/acceptance-criteria.md`.
-- D2 PASS: 33/33 tests green (geometry kernel, shipped assets, spec coherence).
+- D2 PASS: 43/43 Python tests green (geometry kernel, shipped assets, spec
+  coherence, full-ship detail budgets) and 22/22 viewer tests green (Chinese
+  copy, part picking, cutaway).
 - D3 PASS: this report.
 - D4 PASS: 14 preview stills (full ship ×5 views, each deck, interior ×2, propulsion ×2).
 
@@ -79,7 +82,12 @@ Generated on the `feat/spaceship-3d-workbench` branch.
   hard-surface metal/emissives.
 - The software preview renderer is a flat-shaded rasteriser for stills only;
   final interactive rendering is the Three.js viewer.
-- WebGL rasterisation could not be screenshot-verified in this headless
-  environment (no GPU); the viewer's data path was verified headlessly instead.
+- Headless Edge renders the viewer through software WebGL (SwiftShader). The
+  screenshots in `reports/` are real rasterisations; frame rate on a GPU client
+  was not measured.
 - Only the full-ship `.blend` is committed to keep the repository lean; the
   other six are one command away via `blender/build_all.sh`.
+- The detail pass was built with the NumPy kernel; Blender is not installed on
+  this workstation, so `models/blend/dsx-01_full_ship.blend` and
+  `reports/blender-validation.json` still describe the earlier geometry.
+  Re-run `blender/build_all.sh` on a Blender 4.x machine to resync them.

@@ -18,7 +18,7 @@ results are in `reports/acceptance-report.md`.
 | # | Criterion | Verification |
 |---|---|---|
 | B1 | Blender original model + modelling scripts present. | `models/blend/dsx-01_full_ship.blend`; `blender/build_asset.py`, `blender/build_all.sh`, `blender/lib/dsx_blender.py`. |
-| B2 | Complete ship GLB present. | `models/glb/dsx-01_full_ship.glb` (67 720 tris). |
+| B2 | Complete ship GLB present. | `models/glb/dsx-01_full_ship.glb` (133 444 tris). |
 | B3 | Four deck-level models present. | `models/glb/dsx-02_deck_0{1..4}_*.glb`. |
 | B4 | Interior compartment + propulsion models present. | `models/glb/dsx-03_interior_compartments.glb`, `dsx-04_propulsion_system.glb`. |
 | B5 | All GLBs are well-formed glTF 2.0 binary and round-trip. | `tests/test_glb_assets.py`; `reports/model-validation.json` round-trip block. |

@@ -12,7 +12,7 @@ are no third-party model assets.
 
 Deliverables in this branch:
 
-- **7 glTF-binary assets** (`models/glb/`, 262 056 tris, ~8.3 MB) + manifest:
+- **7 glTF-binary assets** (`models/glb/`, 353 864 tris, ~11.5 MB) + manifest:
   complete ship, four deck-level cutaways, interior compartment layout, and a
   fusion torch drive study.
 - **Native Blender original** (`models/blend/dsx-01_full_ship.blend`) plus a
@@ -26,7 +26,7 @@ Deliverables in this branch:
   `assets/preview/`.
 - **Design documentation** (`docs/`): specification, modelling guide, asset
   contract, viewer guide, acceptance criteria.
-- **Validation**: dependency-free test suite (33 tests), per-asset GLB
+- **Validation**: dependency-free test suite (43 Python tests + 22 viewer tests), per-asset GLB
   round-trip report, Blender↔Python exporter cross-validation, and a measured
   acceptance report (`reports/`).
 
