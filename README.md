@@ -20,7 +20,7 @@ Blender 原始模型、离线 Three.js 交互查看器、软件预览渲染器�
 | `geometry/` | NumPy mesh kernel + from-scratch glTF writer/reader · 几何内核与 glTF 读写器 |
 | `shipspec/` | Design spec + procedural builders (hull, decks, interiors, propulsion) · 设计规范与程序化建模器 |
 | `blender/` | Headless Blender bridge → `.blend` / cross-check `.glb` · Blender 桥接脚本 |
-| `viewer/` | Offline Three.js workbench (vendored three r160) · 离线 Three.js 查看器 |
+| `viewer/` | Offline Three.js workbench, Chinese UI, part picking and drive cutaway (vendored three r160) · 离线 Three.js 查看器（中文界面、部件拾取、推进剖视） |
 | `scripts/` | build / render / test / validate / serve / publish helpers · 各类工具脚本 |
 | `assets/preview/` | 14 software-rendered stills · 14 张软件渲染预览图 |
 | `docs/` | design spec, modelling guide, asset contract, viewer guide, acceptance criteria · 设计/建模/资产/查看器/验收文档 |
@@ -33,7 +33,8 @@ Blender 原始模型、离线 Three.js 交互查看器、软件预览渲染器�
 - Four decks (Command / Operations / Habitat / Engineering), eleven isolation
   systems, centrifuge gravity ring, four thermal radiator wings, spine truss
   with five propellant tanks, three fusion torch drives, 15 m high-gain array.
-- 262 056 triangles across the seven assets; 35-material PBR library.
+- 353 864 triangles across the seven assets (133 444 for the complete ship);
+  35-material PBR library.
 
 See `docs/design-specification.md` for the full frozen dimension set.
 
@@ -43,8 +44,9 @@ See `docs/design-specification.md` for the full frozen dimension set.
 # 1. Regenerate every model (NumPy only) · 重新生成全部模型
 python3 scripts/build_models.py --report reports/model-validation.json
 
-# 2. Run the test suite · 运行测试
+# 2. Run the test suites · 运行测试
 python3 scripts/run_tests.py
+node --test "viewer/tests/*.test.mjs"
 
 # 3. Open the interactive viewer · 打开交互查看器
 ./scripts/serve.sh            # then open http://localhost:8000/viewer/
@@ -54,23 +56,29 @@ python3 scripts/run_tests.py
 python3 scripts/render_preview.py --all   # preview stills
 ```
 
+On Windows run the Python steps with an interpreter that has NumPy installed
+(this workstation uses `E:/msys64/ucrt64/bin/python.exe`).
+
 ## Repository layout & workflow · 仓库与工作流
 
 - All modelling source lives at the repository root; there is no separate
   scratch project.
-- Development happens on `feat/spaceship-3d-workbench`; `main` keeps only the
-  initial skeleton. Each milestone is its own commit with an English message.
+- Development happens on `feat/spaceship-3d-workbench`; milestones land on
+  `main` with English commit messages.
 - `scripts/publish.sh <owner>` pushes the branch and prints ready-to-use PR
   text (see `docs/PULL_REQUEST.md`).
 
 ## Validation · 校验
 
-- `scripts/run_tests.py` — 33 dependency-free tests (kernel, shipped assets,
-  spec coherence).
+- `scripts/run_tests.py` — 43 dependency-free Python tests (kernel, shipped
+  assets, spec coherence, whole-ship detail budgets).
+- `viewer/tests/` — 22 Node tests (Chinese copy coverage, part picking,
+  cutaway isolation).
 - `reports/model-validation.json` — per-asset counts, bounds and GLB
   round-trip parity.
-- `reports/blender-validation.json` — Blender vs Python exporter parity
-  (triangle/mesh counts match for all seven assets).
+- `reports/blender-validation.json` — Blender vs Python exporter parity for the
+  previous geometry pass. Blender is not installed on this workstation, so
+  re-run `blender/build_all.sh` to resync the `.blend` with the current models.
 - `reports/acceptance-report.md` — measured acceptance results.
 
 ## Licence & provenance · 版权与来源

@@ -23,6 +23,7 @@ from geometry.mesh import (
     primitive_torus,
     primitive_tube,
 )
+from shipspec import exterior_detail as xd
 from shipspec import fixtures as fx
 from shipspec.constants import (
     BOW_TAPER_X,
@@ -100,6 +101,7 @@ def _pressure_hull(builder: Builder) -> None:
         [
             (primitive_loft(bow_stations, "bow"), "HullMid"),
             (_bow_aperture(), "WindowGlow"),
+            *xd.bow_nose_detail().merge_per_material(),
         ],
         description=(
             "Tapered bow housing the long baseline sensor suite, astronavigation "
@@ -151,6 +153,42 @@ def _pressure_hull(builder: Builder) -> None:
         description=(
             "External hull plating seams marking each pressure deck, plus the "
             "directorate livery stripe and registry markings."
+        ),
+        tags=("structure", "detail"),
+    )
+
+    builder.multi(
+        "HULL_ArmourBelt",
+        "Segmented Armour Belt",
+        "SYS_HULL",
+        xd.armour_belt().merge_per_material(),
+        description=(
+            "Segmented ceramic-composite armour over both flanks and the dorsal "
+            "spine, with bolted plate edges, hazard markings and offset seams."
+        ),
+        tags=("structure", "detail", "protection"),
+    )
+
+    builder.multi(
+        "HULL_SurfaceGreebles",
+        "Hull Surface Systems & Greebles",
+        "SYS_HULL",
+        xd.surface_greebles().merge_per_material(),
+        description=(
+            "Vents, junction boxes, cable ducts, inspection hatches, sensor pods "
+            "and cargo pods fitted tight to the outer skin."
+        ),
+        tags=("structure", "detail", "utility"),
+    )
+
+    builder.multi(
+        "HULL_FrameRings",
+        "Transverse Frame Rings",
+        "SYS_HULL",
+        xd.frame_rings().merge_per_material(),
+        description=(
+            "Exposed transverse frames every 7 m: eight-member belt beams standing "
+            "proud of the plating with bolted corner gussets."
         ),
         tags=("structure", "detail"),
     )
@@ -271,10 +309,10 @@ def _deck_exteriors(builder: Builder) -> None:
         half = hull_half_width(z_center)
         windows = []
         for side in (-1, 1):
-            band = fx.window_band(length=112.0, height=1.5, count=26)
-            rot = (0, 0, 0) if side < 0 else (0, math.pi, 0)
+            band = xd.framed_window_band(length=112.0, height=1.2, count=26)
+            rot = (0, 0, 0) if side > 0 else (0, 0, math.pi)
             for mesh, material in band:
-                placed = mesh.copy().rotate(*rot).translate(96.0, side * (half + 0.1), z_center + 1.2)
+                placed = mesh.copy().rotate(*rot).translate(96.0, side * (half + 0.02), z_center)
                 windows.append((placed, material))
         builder.multi(
             f"DECK{deck.index:02d}_ViewportBand",
@@ -347,17 +385,7 @@ def _deck_exteriors(builder: Builder) -> None:
 
 
 def _bridge_blister():
-    fixture = fx.Fixture()
-    z = DECKS[0].z_bottom + DECK_HEIGHT * 0.62
-    x = HAB_BLOCK_X_FWD - 12.0
-    fixture.add(primitive_box(20.0, 30.0, 3.6), "HullDark", loc=(x, 0, z))
-    for i in range(9):
-        y = -12.0 + i * 3.0
-        fixture.add(primitive_box(18.0, 2.2, 0.4), "WindowGlow", loc=(x, y, z + 1.7))
-        fixture.add(primitive_box(1.2, 2.6, 1.0), "HullMid", loc=(x + 9.6, y, z + 1.4))
-    fixture.add(primitive_box(21.0, 31.0, 0.6), "HullMid", loc=(x, 0, z + 2.0))
-    fixture.add(primitive_box(2.0, 30.0, 3.0), "TrussMetal", loc=(x - 10.5, 0, z + 0.4))
-    return fixture.merge_per_material()
+    return xd.bridge_canopy().merge_per_material()
 
 
 def _hangar_doors():
@@ -483,6 +511,23 @@ def _thermal(builder: Builder) -> None:
                 loc=(x_center, side * (8.0 + RADIATOR_SPAN * 0.5 * 0.0), level),
                 rot=rot,
             )
+            # Frame spars, transverse ribs, tip caps and root manifold.
+            detail = fx.Fixture()
+            for y in (-RADIATOR_SPAN * 0.3, 0.0, RADIATOR_SPAN * 0.3):
+                detail.add(primitive_box(length * 0.92, 0.3, 0.22), "TrussMetal", loc=(0, y, 0.32))
+            for k in range(7):
+                x = -length * 0.44 + k * (length * 0.88 / 6)
+                detail.add(primitive_box(0.28, RADIATOR_SPAN * 0.96, 0.3), "EngineMetal", loc=(x, 0, 0.35))
+            for x in (-length * 0.5, length * 0.5):
+                detail.add(primitive_box(0.9, RADIATOR_SPAN + 1.2, 0.55), "EngineMetal", loc=(x, 0, 0.05))
+            detail.add(primitive_cylinder(0.5, RADIATOR_SPAN * 0.9, 14), "PipingSteel",
+                       loc=(-length * 0.5 - 0.6, 0, -0.2), rot=(math.pi / 2, 0, 0))
+            detail.add(primitive_torus(1.1, 0.22, 18, 8), "EngineMetal",
+                       loc=(-length * 0.5 - 0.2, 0, 0), rot=(0, math.pi / 2, 0))
+            for k in range(6):
+                detail.add(primitive_box(0.34, 0.34, 0.6), "TrussMetal",
+                           loc=(-length * 0.4 + k * length * 0.16, 0, 0.4))
+            wings.extend_at(detail, loc=(x_center, side * (8.0 + RADIATOR_SPAN * 0.5 * 0.0), level), rot=rot)
             wings.add(
                 beam_between((x_center - length * 0.5, side * 6.0, level * 0.5), (x_center - length * 0.5, side * 8.0, level), 1.2, 1.2),
                 "TrussMetal",
@@ -557,6 +602,7 @@ def _centrifuge(builder: Builder) -> None:
             ),
             rot=(a, 0, 0),
         )
+    ring.extend_at(xd.centrifuge_ring_detail())
     builder.multi(
         "CENTRIFUGE_HabitatRing",
         "Centrifuge Habitat Ring R-1",
@@ -585,6 +631,7 @@ def _centrifuge(builder: Builder) -> None:
     spokes.add(primitive_cylinder(5.2, 10.0, 20), "HullMid", loc=(CENTRIFUGE_X, 0, 0), rot=(0, math.pi / 2, 0))
     spokes.add(primitive_torus(5.4, 0.5, 22, 8), "EngineMetal", loc=(CENTRIFUGE_X - 4.0, 0, 0), rot=(0, math.pi / 2, 0))
     spokes.add(primitive_torus(5.4, 0.5, 22, 8), "EngineMetal", loc=(CENTRIFUGE_X + 4.0, 0, 0), rot=(0, math.pi / 2, 0))
+    spokes.extend_at(xd.centrifuge_spoke_detail())
     builder.multi(
         "CENTRIFUGE_SpokesAndHub",
         "Ring Spokes & Bearing Hub",
@@ -647,6 +694,7 @@ def _propulsion(builder: Builder) -> None:
             loc=(x_bell_start + 1.0, y, z),
             rot=(0, math.pi / 2, 0),
         )
+    nozzles.extend_at(xd.nozzle_stiffeners())
     builder.multi(
         "PROP_MainTorchNozzles",
         "Main Fusion Torch Nozzles (x3)",
@@ -659,30 +707,7 @@ def _propulsion(builder: Builder) -> None:
         tags=("propulsion", "engine"),
     )
 
-    thrust_frame = fx.Fixture()
-    thrust_frame.add(
-        primitive_box(24.0, 54.0, 40.0),
-        "TrussMetal",
-        loc=((ENGINE_BLOCK_X_AFT + SPINE_X_AFT) * 0.5, 0, -2.0),
-        scale=(1, 1, 1),
-    )
-    for y, z, radius in MAIN_NOZZLES:
-        thrust_frame.add(
-            primitive_torus(radius * 1.25, 1.1, 24, 8),
-            "EngineMetal",
-            loc=(ENGINE_BLOCK_X_AFT + 2.0, y, z),
-            rot=(0, math.pi / 2, 0),
-        )
-        for i in range(6):
-            a = TWO_PI * i / 6
-            thrust_frame.add(
-                beam_between(
-                    (ENGINE_BLOCK_X_AFT + 6.0, y + math.cos(a) * radius * 1.2, z + math.sin(a) * radius * 1.2),
-                    (SPINE_X_AFT - 2.0, y * 0.5 + math.cos(a) * 4.0, z * 0.5 + math.sin(a) * 4.0),
-                    1.3, 1.3,
-                ),
-                "TrussMetal",
-            )
+    thrust_frame = xd.engine_bay_frame()
     builder.multi(
         "PROP_ThrustStructure",
         "Thrust Structure & Gimbal Mounts",

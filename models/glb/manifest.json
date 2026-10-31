@@ -5,7 +5,7 @@
   "generator": "DSX-01 Kairos Horizon procedural modeller",
   "units": "metre",
   "exportFrame": "glTF 2.0 binary, Y-up",
-  "generatedAt": "2026-10-30T19:08:43Z",
+  "generatedAt": "2026-10-31T14:02:06Z",
   "systems": {
     "SYS_HULL": "Primary Structure",
     "SYS_COMMAND": "Deck 01 - Command & Navigation",
@@ -26,42 +26,42 @@
       "category": "full-ship",
       "label": "DSX-01 ISV Kairos Horizon - complete exterior",
       "deckKey": null,
-      "bytes": 2026424,
-      "bytesHuman": "1.9 MB",
-      "buildSeconds": 0.264,
-      "nodes": 40,
-      "meshes": 29,
+      "bytes": 4600936,
+      "bytesHuman": "4.4 MB",
+      "buildSeconds": 0.808,
+      "nodes": 43,
+      "meshes": 32,
       "primitives": null,
-      "triangleCount": 67720,
-      "vertexCount": 64217,
+      "triangleCount": 133444,
+      "vertexCount": 153646,
       "materialCount": 35,
       "bounds": {
         "min": [
           -246.0,
-          -51.4,
-          -51.4
+          -52.42,
+          -52.42
         ],
         "max": [
-          246.0,
+          246.4,
           52.85,
-          51.4
+          52.42
         ],
         "size": [
-          492.0,
-          104.25,
-          102.8
+          492.4,
+          105.27,
+          104.84
         ]
       },
       "roundTrip": {
         "version": 2,
-        "byteLength": 2026424,
-        "nodes": 40,
-        "meshes": 29,
+        "byteLength": 4600936,
+        "nodes": 43,
+        "meshes": 32,
         "materials": 35,
-        "accessors": 276,
-        "bufferViews": 276,
-        "triangleCount": 67720,
-        "vertexCount": 64217,
+        "accessors": 432,
+        "bufferViews": 432,
+        "triangleCount": 133444,
+        "vertexCount": 153646,
         "matchesBuild": true
       }
     },
@@ -73,7 +73,7 @@
       "deckKey": "deck_01_command",
       "bytes": 700828,
       "bytesHuman": "684.4 KB",
-      "buildSeconds": 0.111,
+      "buildSeconds": 0.129,
       "nodes": 8,
       "meshes": 7,
       "primitives": null,
@@ -118,7 +118,7 @@
       "deckKey": "deck_02_operations",
       "bytes": 616232,
       "bytesHuman": "601.8 KB",
-      "buildSeconds": 0.098,
+      "buildSeconds": 0.113,
       "nodes": 7,
       "meshes": 6,
       "primitives": null,
@@ -163,7 +163,7 @@
       "deckKey": "deck_03_habitat",
       "bytes": 1257276,
       "bytesHuman": "1.2 MB",
-      "buildSeconds": 0.165,
+      "buildSeconds": 0.201,
       "nodes": 8,
       "meshes": 7,
       "primitives": null,
@@ -208,7 +208,7 @@
       "deckKey": "deck_04_engineering",
       "bytes": 807976,
       "bytesHuman": "789.0 KB",
-      "buildSeconds": 0.123,
+      "buildSeconds": 0.152,
       "nodes": 8,
       "meshes": 7,
       "primitives": null,
@@ -253,7 +253,7 @@
       "deckKey": null,
       "bytes": 2450580,
       "bytesHuman": "2.3 MB",
-      "buildSeconds": 0.362,
+      "buildSeconds": 0.431,
       "nodes": 18,
       "meshes": 14,
       "primitives": null,
@@ -296,50 +296,50 @@
       "category": "propulsion",
       "label": "Fusion torch drive & propulsion system",
       "deckKey": null,
-      "bytes": 842156,
-      "bytesHuman": "822.4 KB",
-      "buildSeconds": 0.077,
+      "bytes": 1626252,
+      "bytesHuman": "1.6 MB",
+      "buildSeconds": 0.224,
       "nodes": 10,
       "meshes": 9,
       "primitives": null,
-      "triangleCount": 32216,
-      "vertexCount": 25283,
+      "triangleCount": 58300,
+      "vertexCount": 50983,
       "materialCount": 35,
       "bounds": {
         "min": [
           -25.0,
-          -13.7,
-          -13.95
+          -14.09,
+          -14.525
         ],
         "max": [
-          25.0,
-          13.7,
-          13.95
+          35.66,
+          14.09,
+          14.525
         ],
         "size": [
-          50.0,
-          27.4,
-          27.9
+          60.66,
+          28.18,
+          29.05
         ]
       },
       "roundTrip": {
         "version": 2,
-        "byteLength": 842156,
+        "byteLength": 1626252,
         "nodes": 10,
         "meshes": 9,
         "materials": 35,
-        "accessors": 150,
-        "bufferViews": 150,
-        "triangleCount": 32216,
-        "vertexCount": 25283,
+        "accessors": 201,
+        "bufferViews": 201,
+        "triangleCount": 58300,
+        "vertexCount": 50983,
         "matchesBuild": true
       }
     }
   ],
   "totals": {
     "assetCount": 7,
-    "triangleCount": 262056,
-    "bytes": 8701472,
-    "bytesHuman": "8.3 MB"
+    "triangleCount": 353864,
+    "bytes": 12060080,
+    "bytesHuman": "11.5 MB"
   }
 }

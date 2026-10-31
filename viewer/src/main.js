@@ -9,6 +9,20 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { applyCutaway, cutawayCameraScale, cutawayDefault } from './cutaway.js';
+import {
+  deckLabel,
+  presetLabel,
+  translateAssetCategory,
+  translateAssetLabel,
+  translateDescription,
+  translateMaterial,
+  translatePart,
+  translateSystem,
+  ui,
+} from './i18n.js';
+import { focusTarget, pickPart } from './selection.js';
+import { createLoadGuard } from './load-guard.js';
 
 const MODEL_BASE = '../models/glb/';
 
@@ -44,10 +58,13 @@ const state = {
   center: new THREE.Vector3(),
   radius: 1,
   centrifuge: null,
-  selected: null,
+  selectedNode: null,
   wireframe: false,
   explode: 0,
+  cutaway: false,
 };
+
+const cutawayPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
 
 // --------------------------------------------------------------------------- //
 // Renderer / scene bootstrap
@@ -58,6 +75,7 @@ try {
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.localClippingEnabled = true;
 } catch (err) {
   // No WebGL (headless / software-only clients): keep the workbench usable for
   // inspection and parsing, just without rasterisation.
@@ -127,6 +145,8 @@ const el = {
   rotate: document.getElementById('t-rotate'),
   spin: document.getElementById('t-spin'),
   stars: document.getElementById('t-stars'),
+  cutaway: document.getElementById('t-cutaway'),
+  cutawayRow: document.getElementById('cutaway-row'),
   hudStats: document.getElementById('hud-stats'),
   info: document.getElementById('info'),
   infoLabel: document.getElementById('info-label'),
@@ -135,7 +155,10 @@ const el = {
   loading: document.getElementById('loading'),
 };
 
-function showLoading(on) { el.loading.classList.toggle('hidden', !on); }
+function showLoading(on, message) {
+  el.loading.classList.toggle('hidden', !on);
+  el.loading.querySelector('span').textContent = message || ui('loading');
+}
 
 function buildAssetButtons() {
   el.assetList.innerHTML = '';
@@ -143,7 +166,9 @@ function buildAssetButtons() {
     const btn = document.createElement('button');
     btn.className = 'asset-btn';
     btn.dataset.id = asset.assetId;
-    btn.innerHTML = `<span class="cat">${asset.category}</span>${asset.label}`;
+    btn.innerHTML =
+      `<span class="cat">${translateAssetCategory(asset.category)}</span>` +
+      translateAssetLabel(asset.label);
     btn.addEventListener('click', () => loadAsset(asset.assetId));
     el.assetList.appendChild(btn);
   }
@@ -154,12 +179,15 @@ function buildSystemList() {
   if (!state.root) return;
   for (const group of state.groups) {
     const id = group.name || 'SYS_UNKNOWN';
-    const label = (state.manifest.systems && state.manifest.systems[id]) || id;
+    const label = translateSystem(id);
     const row = document.createElement('label');
     const box = document.createElement('input');
     box.type = 'checkbox';
     box.checked = group.visible;
-    box.addEventListener('change', () => { group.visible = box.checked; });
+    box.addEventListener('change', () => {
+      group.visible = box.checked;
+      if (!box.checked && isInside(state.selectedNode, group)) clearSelection();
+    });
     const sw = document.createElement('span');
     sw.className = 'swatch';
     sw.style.background = SYSTEM_COLORS[id] || '#888';
@@ -175,7 +203,8 @@ function buildPresets() {
   for (const name of Object.keys(CAMERA_PRESETS)) {
     const btn = document.createElement('button');
     btn.className = 'preset-btn';
-    btn.textContent = name;
+    btn.textContent = presetLabel(name);
+    btn.title = presetLabel(name);
     btn.addEventListener('click', () => applyPreset(name));
     el.presets.appendChild(btn);
   }
@@ -184,7 +213,7 @@ function buildPresets() {
 function applyPreset(name) {
   const dir = CAMERA_PRESETS[name];
   if (!dir) return;
-  const dist = state.radius * (name === 'ring' ? 0.55 : 1.0);
+  const dist = state.radius * (name === 'ring' ? 0.55 : cutawayCameraScale(state.assetId));
   const target = name === 'ring' && state.centrifuge
     ? new THREE.Vector3().setFromMatrixPosition(state.centrifuge.matrixWorld)
     : state.center.clone();
@@ -197,6 +226,7 @@ function applyPreset(name) {
 // Asset loading
 // --------------------------------------------------------------------------- //
 const loader = new GLTFLoader();
+const loadGuard = createLoadGuard();
 
 function disposeObject(obj) {
   obj.traverse((node) => {
@@ -211,11 +241,15 @@ function disposeObject(obj) {
 function loadAsset(assetId) {
   const asset = state.manifest.assets.find((a) => a.assetId === assetId);
   if (!asset) return;
+  const loadToken = loadGuard.begin();
   state.assetId = assetId;
+  state.cutaway = cutawayDefault(assetId);
+  el.cutaway.checked = state.cutaway;
+  el.cutawayRow.classList.toggle('hidden', asset.category !== 'propulsion');
   for (const btn of el.assetList.children) btn.classList.toggle('active', btn.dataset.id === assetId);
 
   showLoading(true);
-  hideInfo();
+  clearSelection();
 
   if (state.root) {
     scene.remove(state.root);
@@ -227,6 +261,10 @@ function loadAsset(assetId) {
   loader.load(
     MODEL_BASE + asset.filename,
     (gltf) => {
+      if (!loadGuard.isCurrent(loadToken)) {
+        disposeObject(gltf.scene);
+        return;
+      }
       const root = gltf.scene;
       state.root = root;
       scene.add(root);
@@ -254,8 +292,9 @@ function loadAsset(assetId) {
       grid.scale.setScalar(Math.max(1, state.radius / 300));
       applyExplode();
       applyWireframe();
+      applyCutaway(root, { assetId, enabled: state.cutaway, plane: cutawayPlane });
       buildSystemList();
-      applyPreset('hero');
+      applyPreset(asset.category === 'propulsion' ? 'starboard' : 'hero');
       updateHud(asset);
       showLoading(false);
       // Machine-readable handshake for automated smoke tests.
@@ -264,7 +303,8 @@ function loadAsset(assetId) {
     undefined,
     (err) => {
       console.error('failed to load', asset.filename, err);
-      showLoading(false);
+      if (!loadGuard.isCurrent(loadToken)) return;
+      showLoading(true, ui('loadError'));
     },
   );
 }
@@ -300,9 +340,9 @@ function updateHud(asset) {
   });
   const size = new THREE.Box3().setFromObject(state.root).getSize(new THREE.Vector3());
   el.hudStats.textContent =
-    `${asset.label}\n` +
-    `${Math.round(tris).toLocaleString()} tris · ${meshes} meshes · ${mats.size} materials\n` +
-    `${size.x.toFixed(0)} × ${size.y.toFixed(0)} × ${size.z.toFixed(0)} m`;
+    `${translateAssetLabel(asset.label)}\n` +
+    `${Math.round(tris).toLocaleString()} ${ui('hud.triangles')} · ${meshes} ${ui('hud.meshes')} · ${mats.size} ${ui('hud.materials')}\n` +
+    `长 ${size.x.toFixed(0)} × 高 ${size.y.toFixed(0)} × 宽 ${size.z.toFixed(0)} m`;
 }
 
 // --------------------------------------------------------------------------- //
@@ -324,22 +364,67 @@ canvas.addEventListener('pointerup', (e) => {
   pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
   raycaster.setFromCamera(pointer, camera);
   const hits = raycaster.intersectObjects(state.root ? [state.root] : [], true);
-  for (const hit of hits) {
-    let obj = hit.object;
-    while (obj && !obj.userData?.partId) obj = obj.parent;
-    if (obj) { showInfo(obj.userData); return; }
+  const part = pickPart(hits);
+  if (part) {
+    selectPart(part);
+    showInfo(part.userData);
+  } else {
+    clearSelection();
   }
-  hideInfo();
 });
 
+let selectionBox = null;
+
+function clearSelectionBox() {
+  if (!selectionBox) return;
+  scene.remove(selectionBox);
+  selectionBox.geometry.dispose();
+  selectionBox.material.dispose();
+  selectionBox = null;
+}
+
+function selectPart(node) {
+  state.selectedNode = node;
+  clearSelectionBox();
+  selectionBox = new THREE.Box3Helper(new THREE.Box3().setFromObject(node), 0x5ad1ff);
+  selectionBox.material.depthTest = false;
+  selectionBox.material.transparent = true;
+  selectionBox.material.opacity = 0.85;
+  selectionBox.renderOrder = 5;
+  scene.add(selectionBox);
+  controls.target.copy(focusTarget(node));
+  controls.update();
+}
+
+function clearSelection() {
+  state.selectedNode = null;
+  clearSelectionBox();
+  hideInfo();
+}
+
+function isInside(node, ancestor) {
+  for (let current = node; current; current = current.parent) {
+    if (current === ancestor) return true;
+  }
+  return false;
+}
+
+function deckText(deck) {
+  if (deck == null) return ui('notApplicable');
+  const name = deckLabel(deck);
+  return name === ui('notApplicable') ? name : `${String(deck).padStart(2, '0')} 甲板 · ${name}`;
+}
+
 function showInfo(data) {
-  el.infoLabel.textContent = data.label || data.partId || 'component';
-  const sys = (state.manifest.systems && state.manifest.systems[data.system]) || data.system || '—';
+  el.infoLabel.textContent = translatePart(data.label) || ui('unknownComponent');
   const rows = [
-    ['part id', data.partId || '—'],
-    ['system', sys],
-    ['deck', data.deck != null ? `Deck 0${data.deck}` : '—'],
-    ['triangles', data.triangleCount != null ? Number(data.triangleCount).toLocaleString() : '—'],
+    [ui('info.field.partId'), data.partId || ui('notApplicable')],
+    [ui('info.field.system'), data.system ? translateSystem(data.system) : ui('notApplicable')],
+    [ui('info.field.deck'), deckText(data.deck)],
+    [
+      ui('info.field.triangles'),
+      data.triangleCount != null ? Number(data.triangleCount).toLocaleString() : ui('notApplicable'),
+    ],
   ];
   if (data.bounds) {
     const s = data.bounds.size || [
@@ -347,19 +432,21 @@ function showInfo(data) {
       data.bounds.max[1] - data.bounds.min[1],
       data.bounds.max[2] - data.bounds.min[2],
     ];
-    rows.push(['size (m)', `${s[0].toFixed(1)} × ${s[1].toFixed(1)} × ${s[2].toFixed(1)}`]);
+    rows.push([ui('info.field.size'), `${s[0].toFixed(1)} × ${s[1].toFixed(1)} × ${s[2].toFixed(1)}`]);
   }
   let html = '<dl class="kv">' + rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('') + '</dl>';
-  if (data.description) html += `<p class="desc">${data.description}</p>`;
+  if (data.description) html += `<p class="desc">${translateDescription(data.description)}</p>`;
   if (data.materials && data.materials.length) {
-    html += '<div class="chips">' + data.materials.map((m) => `<span class="chip">${m}</span>`).join('') + '</div>';
+    html += '<div class="chips">' +
+      data.materials.map((m) => `<span class="chip">${translateMaterial(m)}</span>`).join('') +
+      '</div>';
   }
   el.infoBody.innerHTML = html;
   el.info.classList.remove('hidden');
 }
 
 function hideInfo() { el.info.classList.add('hidden'); }
-el.infoClose.addEventListener('click', hideInfo);
+el.infoClose.addEventListener('click', clearSelection);
 
 // --------------------------------------------------------------------------- //
 // Controls
@@ -371,6 +458,10 @@ el.explode.addEventListener('input', () => {
 el.wire.addEventListener('change', () => { state.wireframe = el.wire.checked; applyWireframe(); });
 el.grid.addEventListener('change', () => { grid.visible = el.grid.checked; });
 el.stars.addEventListener('change', () => { starfield.visible = el.stars.checked; });
+el.cutaway.addEventListener('change', () => {
+  state.cutaway = el.cutaway.checked;
+  applyCutaway(state.root, { assetId: state.assetId, enabled: state.cutaway, plane: cutawayPlane });
+});
 
 // --------------------------------------------------------------------------- //
 // Resize + main loop
@@ -391,6 +482,7 @@ function tick() {
   controls.autoRotate = el.rotate.checked;
   controls.autoRotateSpeed = 0.6;
   if (el.spin.checked && state.centrifuge) state.centrifuge.rotation.x += dt * 0.35;
+  if (selectionBox && state.selectedNode) selectionBox.box.setFromObject(state.selectedNode);
   controls.update();
   if (renderer) renderer.render(scene, camera);
 }
